@@ -75,15 +75,17 @@ async def signup(
     if body.account_type == "individual":
         pass
     else:
-        profile_kwargs.update(
-            job_title=body.job_title,
-            company_reg_no=body.company_reg_no,
-            industry=body.industry,
-            company_size=body.company_size,
-            website=body.website,
-            billing_address=body.billing_address,
-            vat_number=body.vat_number,
-        )
+        profile_kwargs.update({
+            k: v for k, v in dict(
+                job_title=body.job_title,
+                company_reg_no=body.company_reg_no,
+                industry=body.industry,
+                company_size=body.company_size,
+                website=body.website,
+                billing_address=body.billing_address,
+                vat_number=body.vat_number,
+            ).items() if v is not None
+        })
 
     profile = await crud.create_client_profile(db, client.id, **profile_kwargs)
     await crud.create_client_credentials(db, client.id, hash_password(body.password))
