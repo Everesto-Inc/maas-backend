@@ -7,9 +7,7 @@ Each connected agent is stored in _tunnels keyed by client_slug.
 import ssl
 import hashlib
 import asyncio
-from typing import Optional
 import websockets
-from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import AsyncSessionLocal
 from db import crud
 from core.orchestrator import run_provisioning

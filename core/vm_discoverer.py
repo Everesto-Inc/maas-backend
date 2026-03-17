@@ -5,9 +5,7 @@ The agent VM acts as a gateway — it scans from inside the private subnet.
 import asyncio
 import ipaddress
 import socket
-from typing import Optional
 import paramiko
-from config import settings
 
 NODE_EXPORTER_PORT = 9100
 SCAN_TIMEOUT = 1.0  # seconds per host

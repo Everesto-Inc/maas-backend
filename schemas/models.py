@@ -1,6 +1,6 @@
 import re
 from typing import Optional, Literal
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 PASSWORD_RE = re.compile(r'^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$')

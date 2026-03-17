@@ -5,11 +5,9 @@ Status updates go to BOTH the DB and the SSE queue simultaneously.
 import asyncio
 import secrets
 import string
-from typing import Optional
 from db.database import AsyncSessionLocal
 from db import crud
 from core import vm_discoverer, prometheus_manager, grafana_client, error_classifier
-from core.cert_authority import build_docker_command, issue_client_cert
 from config import settings
 
 # SSE queues per client slug — frontend subscribes to these
