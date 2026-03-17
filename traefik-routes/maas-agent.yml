@@ -1,0 +1,31 @@
+# Place this file at: /etc/traefik/conf.d/maas-agent.yml  (on the bastion)
+#
+# Routes:  agent.everesto.live  →  K3s NodePort 30765  →  maas-backend WSS (port 8765)
+#
+# Traefik automatically handles WebSocket upgrade (HTTP → WSS).
+# The serversTransport disables idle timeouts so persistent WSS connections are not dropped.
+
+http:
+  routers:
+    maas-agent:
+      rule: "Host(`agent.everesto.live`)"
+      entryPoints: [websecure]
+      service: maas-agent
+      tls:
+        certResolver: letsencrypt
+
+  serversTransports:
+    maas-agent-transport:
+      forwardingTimeouts:
+        dialTimeout: 10s
+        responseHeaderTimeout: 0s   # disabled — WSS connections are long-lived
+        idleConnTimeout: 0s         # disabled — never drop idle WSS connections
+
+  services:
+    maas-agent:
+      loadBalancer:
+        serversTransport: maas-agent-transport
+        servers:
+          - url: "http://10.0.2.120:30765"
+        responseForwarding:
+          flushInterval: 100ms      # flush WebSocket frames quickly

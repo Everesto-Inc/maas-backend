@@ -1,0 +1,27 @@
+# Place this file at: /etc/traefik/conf.d/maas.yml  (on the bastion)
+# Traefik auto-reloads when files in conf.d change.
+#
+# Routes:  maas.everesto.live  →  K3s control-plane NodePort 30300  →  maas-frontend
+
+http:
+  routers:
+    maas-frontend:
+      rule: "Host(`maas.everesto.live`)"
+      entryPoints: [websecure]
+      service: maas-frontend
+      middlewares: [maas-frontend-rate-limit]
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    maas-frontend-rate-limit:
+      rateLimit:
+        average: 200
+        period: 1s
+        burst: 100
+
+  services:
+    maas-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.2.120:30300"

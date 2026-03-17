@@ -1,0 +1,26 @@
+# Place this file at: /etc/traefik/conf.d/maas-api.yml  (on the bastion)
+#
+# Routes:  api.everesto.live  →  K3s control-plane NodePort 30800  →  maas-backend FastAPI
+
+http:
+  routers:
+    maas-api:
+      rule: "Host(`api.everesto.live`)"
+      entryPoints: [websecure]
+      service: maas-api
+      middlewares: [maas-api-rate-limit]
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    maas-api-rate-limit:
+      rateLimit:
+        average: 100
+        period: 1s
+        burst: 50
+
+  services:
+    maas-api:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.2.120:30800"

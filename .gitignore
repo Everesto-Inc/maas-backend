@@ -1,0 +1,63 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# Testing & coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# Oracle wallet — never commit
+wallet/
+*.sso
+*.p12
+*.jks
+ewallet*
+cwallet*
+tnsnames.ora
+sqlnet.ora
+
+# mTLS certs & keys — never commit
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Prometheus service discovery — generated at runtime
+prometheus_sd/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic auto-generated (keep migrations, ignore cache)
+alembic/versions/__pycache__/
