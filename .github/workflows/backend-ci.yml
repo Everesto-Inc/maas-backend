@@ -10,6 +10,7 @@ env:
   VM_AGENT_IMAGE: ghcr.io/${{ github.repository_owner }}/maas-vm-agent
   LAPTOP_AGENT_IMAGE: ghcr.io/${{ github.repository_owner }}/maas-laptop-agent
   TAG: ${{ github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ── Detect which paths changed ─────────────────────────────────────────────
@@ -21,9 +22,13 @@ jobs:
       laptop_agent: ${{ steps.filter.outputs.laptop_agent }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # full history so paths-filter can diff on first push
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          # On first push (no base commit) treat everything as changed
+          base: ${{ github.event.before == '0000000000000000000000000000000000000000' && 'HEAD' || github.event.before }}
           filters: |
             backend:
               - '**/*.py'
