@@ -2,4 +2,9 @@ venv
 __pycache__
 *.pyc
 .env
+.env.*
 certs
+wallet
+*.key
+*.pem
+*.p12

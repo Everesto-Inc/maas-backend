@@ -1,12 +1,13 @@
 from urllib.parse import quote_plus
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     # Oracle Autonomous Database
-    ORACLE_DSN: str
-    ORACLE_USER: str
-    ORACLE_PASSWORD: str
+    ORACLE_DSN: str = ""
+    ORACLE_USER: str = ""
+    ORACLE_PASSWORD: str = ""
     ORACLE_WALLET_DIR: str = ""
     ORACLE_WALLET_PASSWORD: str = ""
     DATABASE_URL: str = ""
@@ -32,9 +33,9 @@ class Settings(BaseSettings):
     AGENT_IMAGE: str = "ghcr.io/everesto/maas-vm-agent"
 
     # Auth
-    SECRET_KEY: str
+    SECRET_KEY: str = ""
     JWT_EXPIRE_HOURS: int = 24
-    ENCRYPTION_KEY: str  # 32-char key for AES-256
+    ENCRYPTION_KEY: str = ""
 
     # Email
     SMTP_HOST: str = "smtp.sendgrid.net"
@@ -51,8 +52,19 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "https://app.everesto.live"
     NODE_EXPORTER_DASHBOARD_ID: int = 1860
 
+    @model_validator(mode="after")
+    def _check_required(self) -> "Settings":
+        missing = [
+            name
+            for name in ("ORACLE_DSN", "ORACLE_USER", "ORACLE_PASSWORD", "SECRET_KEY", "ENCRYPTION_KEY")
+            if not getattr(self, name)
+        ]
+        if missing:
+            raise RuntimeError("Required environment variables are not set. Check your secrets configuration.")
+        return self
+
     class Config:
         env_file = ".env"
 
 
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()
