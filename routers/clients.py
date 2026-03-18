@@ -9,6 +9,7 @@ from schemas.models import ClientProfileOut, VmOut, GrafanaUrlResponse, LaptopCm
 from services.auth_service import get_current_client, create_laptop_agent_token, hash_token
 from services.encryption import decrypt, encrypt
 from core import grafana_client
+from config import settings
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -125,7 +126,7 @@ async def get_laptop_cmd(
         f"  -e CLIENT_SLUG={client.slug} \\\n"
         f"  -e CLIENT_TOKEN={token} \\\n"
         f"  -e INSTANCE_NAME=my-laptop \\\n"
-        f"  ghcr.io/everesto/maas-laptop-agent:latest"
+        f"  {settings.LAPTOP_AGENT_IMAGE}"
     )
 
     macos_cmd = (
@@ -135,7 +136,7 @@ async def get_laptop_cmd(
         f"  -e CLIENT_TOKEN={token} \\\n"
         f"  -e INSTANCE_NAME=my-laptop \\\n"
         f"  -e NODE_EXPORTER_URL=host.docker.internal:9100 \\\n"
-        f"  ghcr.io/everesto/maas-laptop-agent:latest"
+        f"  {settings.LAPTOP_AGENT_IMAGE}"
     )
 
     return LaptopCmdResponse(

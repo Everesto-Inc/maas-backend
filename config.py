@@ -30,7 +30,8 @@ class Settings(BaseSettings):
     # Agent / WSS
     AGENT_SERVER_HOST: str = "agent.everesto.live"
     AGENT_SERVER_PORT: int = 8765
-    AGENT_IMAGE: str = "ghcr.io/everesto/maas-vm-agent"
+    AGENT_IMAGE: str = "ghcr.io/jacer7/maas-vm-agent"
+    LAPTOP_AGENT_IMAGE: str = "ghcr.io/jacer7/maas-laptop-agent"
 
     # Auth
     SECRET_KEY: str = ""
