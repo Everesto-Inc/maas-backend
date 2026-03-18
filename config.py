@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     SONAR_TOKEN: str = ""
 
     # App
-    FRONTEND_URL: str = "https://app.everesto.live"
+    FRONTEND_URL: str = "https://maas.everesto.live"
     NODE_EXPORTER_DASHBOARD_ID: int = 1860
 
     @model_validator(mode="after")
