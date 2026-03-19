@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
 from db import crud
 from db.models import Client
-from schemas.models import ClientProfileOut, VmOut, GrafanaUrlResponse, LaptopCmdResponse
+from schemas.models import ClientProfileOut, VmOut, GrafanaUrlResponse, LaptopCmdResponse, GrafanaPasswordChange
 from services.auth_service import get_current_client, create_laptop_agent_token, hash_token
 from services.encryption import decrypt, encrypt
 from core import grafana_client
@@ -66,10 +66,23 @@ async def get_grafana_url(
         raise HTTPException(status_code=404, detail="Dashboard not provisioned yet.")
 
     grafana_pass = decrypt(ga.grafana_pass)
-    url = await grafana_client.generate_autologin_url(
-        ga.org_id, ga.grafana_user, grafana_pass, ga.dashboard_uid
-    )
-    return GrafanaUrlResponse(url=url)
+    url = grafana_client.generate_dashboard_url(ga.org_id, ga.dashboard_uid)
+    return GrafanaUrlResponse(url=url, grafana_user=ga.grafana_user, grafana_pass=grafana_pass)
+
+
+@router.put("/me/grafana-password")
+async def change_grafana_password(
+    body: GrafanaPasswordChange,
+    client: Client = Depends(get_current_client),
+    db: AsyncSession = Depends(get_db),
+):
+    ga = await crud.get_grafana_access(db, client.id)
+    if not ga:
+        raise HTTPException(status_code=404, detail="Grafana not provisioned yet.")
+    await grafana_client.update_user_password(ga.grafana_user, body.new_password)
+    await crud.update_grafana_pass(db, client.id, encrypt(body.new_password))
+    await db.commit()
+    return {"ok": True}
 
 
 @router.get("/me/laptop-cmd", response_model=LaptopCmdResponse)

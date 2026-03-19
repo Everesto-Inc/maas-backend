@@ -300,3 +300,11 @@ async def get_grafana_access(db: AsyncSession, client_id: bytes) -> Optional[Gra
         select(GrafanaAccess).where(GrafanaAccess.client_id == client_id)
     )
     return result.scalar_one_or_none()
+
+
+async def update_grafana_pass(db: AsyncSession, client_id: bytes, encrypted_pass: str):
+    await db.execute(
+        update(GrafanaAccess)
+        .where(GrafanaAccess.client_id == client_id)
+        .values(grafana_pass=encrypted_pass)
+    )

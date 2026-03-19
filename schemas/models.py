@@ -180,7 +180,9 @@ class VmOut(BaseModel):
 
 
 class GrafanaUrlResponse(BaseModel):
-    url: str  # short-lived auto-login URL
+    url: str
+    grafana_user: str
+    grafana_pass: str
 
 
 class LaptopCmdResponse(BaseModel):
@@ -188,3 +190,11 @@ class LaptopCmdResponse(BaseModel):
     macos_cmd: str                       # macOS command (host.docker.internal, brew node_exporter)
     laptop_dashboard_url: Optional[str]  # Grafana dashboard path — available immediately
     token_expires_at: str                # ISO datetime — regenerate after this date
+
+
+class GrafanaPasswordChange(BaseModel):
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def strong_password(cls, v): return validate_password(v)

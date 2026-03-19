@@ -121,18 +121,20 @@ async def provision_dashboard(org_id: int, dashboard_id: int) -> dict:
             return {"uid": data["uid"], "url": data["importedUrl"]}
 
 
-async def generate_autologin_url(org_id: int, username: str, password: str, dashboard_uid: str) -> str:
-    """Generate a short-lived auto-login Grafana URL via the auth proxy pattern."""
-    # Use Grafana's API to get a signed-in session token
-    async with aiohttp.ClientSession() as s:
-        async with s.post(
-            f"{BASE}/api/login",
-            json={"user": username, "password": password},
-        ) as r:
-            r.raise_for_status()
+def generate_dashboard_url(org_id: int, dashboard_uid: str) -> str:
+    """Return the Grafana dashboard URL for the client's org."""
+    return f"{settings.GRAFANA_PUBLIC_URL}/d/{dashboard_uid}?orgId={org_id}"
 
-    # Construct public redirect URL with org context
-    return f"{settings.GRAFANA_PUBLIC_URL}/d/{dashboard_uid}?orgId={org_id}&kiosk=tv"
+
+async def update_user_password(username: str, new_password: str):
+    """Update a Grafana user's password via the admin API."""
+    async with aiohttp.ClientSession(auth=AUTH) as s:
+        async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={username}") as r:
+            r.raise_for_status()
+            user_id = (await r.json())["id"]
+        async with s.put(f"{BASE}/api/admin/users/{user_id}/password",
+                         json={"password": new_password}) as r:
+            r.raise_for_status()
 
 
 async def delete_org(org_id: int):
