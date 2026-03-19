@@ -1,6 +1,6 @@
 import secrets
 import string
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
 from db import crud
@@ -87,7 +87,6 @@ async def change_grafana_password(
 
 @router.get("/me/laptop-cmd", response_model=LaptopCmdResponse)
 async def get_laptop_cmd(
-    request: Request,
     client: Client = Depends(get_current_client),
     db: AsyncSession = Depends(get_db),
 ):
@@ -130,7 +129,7 @@ async def get_laptop_cmd(
     await db.commit()
 
     # ── Build docker run commands (Linux + macOS variants) ──────────────────
-    platform_url = str(request.base_url).rstrip("/")
+    platform_url = settings.PLATFORM_PUBLIC_URL.rstrip("/")
 
     linux_cmd = (
         f"docker run -d --name laptop-monitor --restart always \\\n"
@@ -144,7 +143,7 @@ async def get_laptop_cmd(
 
     macos_cmd = (
         f"docker run -d --name laptop-monitor --restart always \\\n"
-        f"  -e PLATFORM_URL={platform_url.replace('localhost', 'host.docker.internal')} \\\n"
+        f"  -e PLATFORM_URL={platform_url} \\\n"
         f"  -e CLIENT_SLUG={client.slug} \\\n"
         f"  -e CLIENT_TOKEN={token} \\\n"
         f"  -e INSTANCE_NAME=my-laptop \\\n"

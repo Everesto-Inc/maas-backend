@@ -51,6 +51,7 @@ class Settings(BaseSettings):
 
     # App
     FRONTEND_URL: str = "https://maas.everesto.live"
+    PLATFORM_PUBLIC_URL: str = "https://api.everesto.live"
     NODE_EXPORTER_DASHBOARD_ID: int = 1860
 
     @model_validator(mode="after")
