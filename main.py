@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from db.database import init_db
 from routers import auth, onboarding, clients, remote_write
 from core.cert_authority import bootstrap_ca, CA_CERT_PATH
@@ -29,6 +30,14 @@ app.include_router(auth.router)
 app.include_router(onboarding.router)
 app.include_router(clients.router)
 app.include_router(remote_write.router)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {type(exc).__name__}: {exc}"},
+    )
 
 
 @app.get("/health")

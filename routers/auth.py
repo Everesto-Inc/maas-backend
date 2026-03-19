@@ -1,4 +1,3 @@
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Union
@@ -17,10 +16,15 @@ from services.email_service import send_welcome_email, send_password_reset_email
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-def _slugify(name: str) -> str:
-    slug = re.sub(r"[^a-z0-9]", "-", name.lower().strip())
-    slug = re.sub(r"-+", "-", slug).strip("-")
-    return slug[:50]
+async def _generate_slug(db) -> str:
+    """Generate sequential slug: maas_001, maas_002, ..."""
+    count = await crud.get_client_count(db)
+    slug = f"maas_{count + 1:03d}"
+    # Handle race condition: if slug taken, keep incrementing
+    while await crud.get_client_by_slug(db, slug):
+        count += 1
+        slug = f"maas_{count + 1:03d}"
+    return slug
 
 
 def _client_out(client, profile) -> ClientProfileOut:
@@ -54,10 +58,7 @@ async def signup(
     else:
         company_name = body.company_name
 
-    slug = _slugify(company_name)
-    # Ensure slug uniqueness
-    if await crud.get_client_by_slug(db, slug):
-        slug = f"{slug}-{secrets.token_hex(3)}"
+    slug = await _generate_slug(db)
 
     # Create client
     client = await crud.create_client(

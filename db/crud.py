@@ -3,7 +3,7 @@ All DB operations live here. Routers and services never query directly.
 """
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.models import Client, ClientProfile, ClientCredentials, ClientSession, Vm, Cert, GrafanaAccess
 
@@ -15,6 +15,11 @@ from db.models import Client, ClientProfile, ClientCredentials, ClientSession, V
 async def get_client_by_email(db: AsyncSession, email: str) -> Optional[Client]:
     result = await db.execute(select(Client).where(Client.email == email.lower()))
     return result.scalar_one_or_none()
+
+
+async def get_client_count(db: AsyncSession) -> int:
+    result = await db.execute(select(func.count()).select_from(Client))
+    return result.scalar_one()
 
 
 async def get_client_by_slug(db: AsyncSession, slug: str) -> Optional[Client]:
