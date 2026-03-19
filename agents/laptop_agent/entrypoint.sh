@@ -43,7 +43,7 @@ echo "[laptop-agent] Prometheus agent connecting to ${PLATFORM_URL}/remote_write
 mkdir -p /tmp/agent-data
 
 exec /bin/prometheus \
+    --agent \
     --config.file=/tmp/prometheus.yml \
-    --enable-feature=agent \
     --storage.agent.path=/tmp/agent-data \
     --web.listen-address=:9091
