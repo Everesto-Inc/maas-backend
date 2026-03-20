@@ -54,8 +54,9 @@ async def create_org_user(org_id: int, username: str, password: str, email: str)
     return user_id, login_to_use
 
 
-async def ensure_prometheus_datasource(org_id: int):
-    """Create the Prometheus datasource in the org if it doesn't exist."""
+async def ensure_prometheus_datasource(org_id: int, client_slug: str):
+    """Create the Prometheus datasource in the org if it doesn't exist.
+    Scoped to the client's metrics only via customQueryParameters label filter."""
     headers = {"X-Grafana-Org-Id": str(org_id)}
     async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
         async with s.get(f"{BASE}/api/datasources/name/Prometheus") as r:
@@ -68,6 +69,9 @@ async def ensure_prometheus_datasource(org_id: int):
             "url": settings.GRAFANA_PROMETHEUS_URL,
             "access": "proxy",
             "isDefault": True,
+            "jsonData": {
+                "customQueryParameters": f'match[]={{client="{client_slug}"}}',
+            },
         }) as r:
             r.raise_for_status()
 

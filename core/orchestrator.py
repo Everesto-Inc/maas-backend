@@ -83,7 +83,7 @@ async def run_provisioning(slug: str, ws):
             grafana_user = slug
             grafana_pass = _random_password()
             await grafana_client.create_org_user(org_id, grafana_user, grafana_pass, client.email)
-            await grafana_client.ensure_prometheus_datasource(org_id)
+            await grafana_client.ensure_prometheus_datasource(org_id, slug)
             laptop_dash = await grafana_client.provision_laptop_dashboard(org_id)
             dash = await grafana_client.provision_dashboard(org_id, settings.NODE_EXPORTER_DASHBOARD_ID)
 

@@ -104,7 +104,7 @@ async def get_laptop_cmd(
         org_id = await grafana_client.create_org(f"{client.company_name} ({client.slug})")
         _, actual_login = await grafana_client.create_org_user(org_id, grafana_user, grafana_pass, client.email)
         grafana_user = actual_login  # use real Grafana login (may differ if email already existed)
-        await grafana_client.ensure_prometheus_datasource(org_id)
+        await grafana_client.ensure_prometheus_datasource(org_id, client.slug)
         laptop_dash = await grafana_client.provision_laptop_dashboard(org_id)
         ga = await crud.create_grafana_access(
             db, client.id, org_id, grafana_user, encrypt(grafana_pass),
@@ -115,7 +115,7 @@ async def get_laptop_cmd(
         await db.commit()
     elif not ga.laptop_dashboard_uid:
         # Org exists (from VPC provisioning) but laptop dashboard not yet created
-        await grafana_client.ensure_prometheus_datasource(ga.org_id)
+        await grafana_client.ensure_prometheus_datasource(ga.org_id, client.slug)
         laptop_dash = await grafana_client.provision_laptop_dashboard(ga.org_id)
         await crud.update_grafana_laptop_dashboard(db, client.id,
                                                    laptop_dash["uid"], laptop_dash["url"])
