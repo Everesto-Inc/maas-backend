@@ -47,10 +47,8 @@ async def create_org_user(org_id: int, username: str, password: str, email: str)
 
 async def ensure_prometheus_datasource(org_id: int):
     """Create the Prometheus datasource in the org if it doesn't exist."""
-    async with aiohttp.ClientSession(auth=AUTH) as s:
-        async with s.post(f"{BASE}/api/user/using/{org_id}") as r:
-            r.raise_for_status()
-
+    headers = {"X-Grafana-Org-Id": str(org_id)}
+    async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
         async with s.get(f"{BASE}/api/datasources/name/Prometheus") as r:
             if r.status == 200:
                 return  # already exists
@@ -76,10 +74,8 @@ async def provision_laptop_dashboard(org_id: int) -> dict:
 
     dashboard_json["title"] = "My Laptop"
 
-    async with aiohttp.ClientSession(auth=AUTH) as s:
-        async with s.post(f"{BASE}/api/user/using/{org_id}") as r:
-            r.raise_for_status()
-
+    headers = {"X-Grafana-Org-Id": str(org_id)}
+    async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
         async with s.post(f"{BASE}/api/dashboards/import", json={
             "dashboard": dashboard_json,
             "overwrite": True,
@@ -103,11 +99,8 @@ async def provision_dashboard(org_id: int, dashboard_id: int) -> dict:
             r.raise_for_status()
             dashboard_json = await r.json(content_type=None)
 
-    async with aiohttp.ClientSession(auth=AUTH) as s:
-        # Switch context to org
-        async with s.post(f"{BASE}/api/user/using/{org_id}") as r:
-            r.raise_for_status()
-
+    headers = {"X-Grafana-Org-Id": str(org_id)}
+    async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
         async with s.post(f"{BASE}/api/dashboards/import", json={
             "dashboard": dashboard_json,
             "overwrite": True,
