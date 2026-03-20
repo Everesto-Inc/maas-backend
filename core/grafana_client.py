@@ -77,7 +77,28 @@ async def ensure_prometheus_datasource(org_id: int, client_slug: str):
             r.raise_for_status()
 
 
-async def provision_laptop_dashboard(org_id: int) -> dict:
+def _patch_dashboard_variables(dashboard_json: dict, client_slug: str) -> dict:
+    """Inject client label filter into Node Exporter Full variable queries
+    so dropdowns only show the client's own jobs/nodes."""
+    for t in dashboard_json.get("templating", {}).get("list", []):
+        q = t.get("query", "")
+        expr = q.get("query", "") if isinstance(q, dict) else q
+        expr = expr.replace(
+            "node_uname_info{",
+            f'node_uname_info{{client="{client_slug}",',
+        ).replace(
+            "node_uname_info,",
+            f'node_uname_info{{client="{client_slug}"}},',
+        )
+        if isinstance(q, dict):
+            q["query"] = expr
+            t["query"] = q
+        else:
+            t["query"] = expr
+    return dashboard_json
+
+
+async def provision_laptop_dashboard(org_id: int, client_slug: str) -> dict:
     """Import Node Exporter Full as 'My Laptop' dashboard into the org."""
     async with aiohttp.ClientSession() as s:
         async with s.get(
@@ -87,6 +108,7 @@ async def provision_laptop_dashboard(org_id: int) -> dict:
             dashboard_json = await r.json(content_type=None)
 
     dashboard_json["title"] = "My Laptop"
+    _patch_dashboard_variables(dashboard_json, client_slug)
 
     headers = {"X-Grafana-Org-Id": str(org_id)}
     async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
