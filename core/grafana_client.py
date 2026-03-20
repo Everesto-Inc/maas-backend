@@ -23,6 +23,7 @@ async def create_org(name: str) -> int:
 async def create_org_user(org_id: int, username: str, password: str, email: str):
     async with aiohttp.ClientSession(auth=AUTH) as s:
         # Create global user — handle 412 if user already exists
+        login_to_use = username  # track actual login for org membership
         async with s.post(f"{BASE}/api/admin/users", json={
             "name": username, "login": username, "password": password, "email": email,
         }) as r:
@@ -30,23 +31,27 @@ async def create_org_user(org_id: int, username: str, password: str, email: str)
                 # 412 = login or email already taken — look up by email first, then username
                 async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={email}") as r2:
                     if r2.status == 200:
-                        user_id = (await r2.json())["id"]
+                        user_data = await r2.json()
+                        user_id = user_data["id"]
+                        login_to_use = user_data["login"]
                     else:
                         async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={username}") as r3:
                             r3.raise_for_status()
-                            user_id = (await r3.json())["id"]
+                            user_data = await r3.json()
+                            user_id = user_data["id"]
+                            login_to_use = user_data["login"]
             else:
                 r.raise_for_status()
                 user_id = (await r.json())["id"]
 
         # Add to org — 409 means already a member, that's fine
         async with s.post(f"{BASE}/api/orgs/{org_id}/users", json={
-            "loginOrEmail": username, "role": "Viewer",
+            "loginOrEmail": login_to_use, "role": "Viewer",
         }) as r:
             if r.status not in (200, 409):
                 r.raise_for_status()
 
-    return user_id
+    return user_id, login_to_use
 
 
 async def ensure_prometheus_datasource(org_id: int):

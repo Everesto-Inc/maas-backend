@@ -102,7 +102,8 @@ async def get_laptop_cmd(
         grafana_user = client.slug
         grafana_pass = _random_password()
         org_id = await grafana_client.create_org(f"{client.company_name} ({client.slug})")
-        await grafana_client.create_org_user(org_id, grafana_user, grafana_pass, client.email)
+        _, actual_login = await grafana_client.create_org_user(org_id, grafana_user, grafana_pass, client.email)
+        grafana_user = actual_login  # use real Grafana login (may differ if email already existed)
         await grafana_client.ensure_prometheus_datasource(org_id)
         laptop_dash = await grafana_client.provision_laptop_dashboard(org_id)
         ga = await crud.create_grafana_access(
