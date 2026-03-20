@@ -65,7 +65,7 @@ async def ensure_prometheus_datasource(org_id: int):
         async with s.post(f"{BASE}/api/datasources", json={
             "name": "Prometheus",
             "type": "prometheus",
-            "url": settings.PROMETHEUS_URL,
+            "url": settings.GRAFANA_PROMETHEUS_URL,
             "access": "proxy",
             "isDefault": True,
         }) as r:

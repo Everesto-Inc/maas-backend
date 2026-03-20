@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     GRAFANA_ADMIN_USER: str = "admin"
     GRAFANA_ADMIN_PASSWORD: str = "changeme"
     GRAFANA_PUBLIC_URL: str = "https://grafana.everesto.live"
+    GRAFANA_PROMETHEUS_URL: str = "http://localhost:9090"  # URL Grafana uses to reach Prometheus (same host)
 
     # Prometheus
     PROMETHEUS_URL: str = "http://prometheus:9090"
