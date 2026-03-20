@@ -27,10 +27,14 @@ async def create_org_user(org_id: int, username: str, password: str, email: str)
             "name": username, "login": username, "password": password, "email": email,
         }) as r:
             if r.status == 412:
-                # User already exists — look up by login
-                async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={username}") as r2:
-                    r2.raise_for_status()
-                    user_id = (await r2.json())["id"]
+                # 412 = login or email already taken — look up by email first, then username
+                async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={email}") as r2:
+                    if r2.status == 200:
+                        user_id = (await r2.json())["id"]
+                    else:
+                        async with s.get(f"{BASE}/api/users/lookup?loginOrEmail={username}") as r3:
+                            r3.raise_for_status()
+                            user_id = (await r3.json())["id"]
             else:
                 r.raise_for_status()
                 user_id = (await r.json())["id"]
