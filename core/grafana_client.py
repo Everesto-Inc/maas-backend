@@ -1,4 +1,5 @@
 """Grafana HTTP API wrapper."""
+import re
 import aiohttp
 from config import settings
 
@@ -51,6 +52,11 @@ async def create_org_user(org_id: int, username: str, password: str, email: str)
             if r.status not in (200, 409):
                 r.raise_for_status()
 
+        # Remove from Org 1 — Grafana auto-adds all new users to the default org,
+        # which would let clients see the platform org via the org switcher.
+        async with s.delete(f"{BASE}/api/orgs/1/users/{user_id}") as r:
+            pass  # ignore errors — user may not be in Org 1
+
     return user_id, login_to_use
 
 
@@ -77,9 +83,28 @@ async def ensure_prometheus_datasource(org_id: int, client_slug: str):
             r.raise_for_status()
 
 
+def _inject_client_label(expr: str, client_slug: str) -> str:
+    """Add client="{slug}" to every PromQL metric selector in expr."""
+    if not expr or f'client="{client_slug}"' in expr:
+        return expr
+    # Add label to existing selectors that don't already have client=
+    result = re.sub(r'\{(?!client=)', '{' + f'client="{client_slug}",', expr)
+    return result
+
+
+def _patch_panels(panels: list, client_slug: str) -> None:
+    """Recursively inject client label into all panel target expressions."""
+    for panel in panels:
+        if panel.get("type") == "row":
+            _patch_panels(panel.get("panels", []), client_slug)
+        for target in panel.get("targets", []):
+            if target.get("expr"):
+                target["expr"] = _inject_client_label(target["expr"], client_slug)
+
+
 def _patch_dashboard_variables(dashboard_json: dict, client_slug: str) -> dict:
-    """Inject client label filter into Node Exporter Full variable queries
-    so dropdowns only show the client's own jobs/nodes."""
+    """Inject client label filter into variable queries and all panel expressions."""
+    # Patch template variable queries (dropdowns)
     for t in dashboard_json.get("templating", {}).get("list", []):
         q = t.get("query", "")
         expr = q.get("query", "") if isinstance(q, dict) else q
@@ -95,6 +120,10 @@ def _patch_dashboard_variables(dashboard_json: dict, client_slug: str) -> dict:
             t["query"] = q
         else:
             t["query"] = expr
+
+    # Patch all panel expressions so actual data is scoped to this client
+    _patch_panels(dashboard_json.get("panels", []), client_slug)
+
     return dashboard_json
 
 
@@ -125,8 +154,8 @@ async def provision_laptop_dashboard(org_id: int, client_slug: str) -> dict:
             return {"uid": data["uid"], "url": data["importedUrl"]}
 
 
-async def provision_dashboard(org_id: int, dashboard_id: int) -> dict:
-    """Import a pre-built dashboard into the org. Returns uid and url."""
+async def provision_dashboard(org_id: int, dashboard_id: int, client_slug: str) -> dict:
+    """Import a pre-built dashboard into the org, scoped to client_slug. Returns uid and url."""
     # Grafana 11 import API requires full JSON — fetch it from grafana.com first
     async with aiohttp.ClientSession() as s:
         async with s.get(
@@ -134,6 +163,8 @@ async def provision_dashboard(org_id: int, dashboard_id: int) -> dict:
         ) as r:
             r.raise_for_status()
             dashboard_json = await r.json(content_type=None)
+
+    _patch_dashboard_variables(dashboard_json, client_slug)
 
     headers = {"X-Grafana-Org-Id": str(org_id)}
     async with aiohttp.ClientSession(auth=AUTH, headers=headers) as s:
