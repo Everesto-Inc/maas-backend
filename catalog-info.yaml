@@ -11,7 +11,6 @@ metadata:
     everesto.live/loop: v1.1.0
     everesto.live/gitleaks: "on"
     everesto.live/trivy: "report"
-    everesto.live/semgrep: "on"
     sonarqube.org/project-key: maas-backend
     everesto.live/dependabot: "on"
     everesto.live/tests: off

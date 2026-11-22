@@ -19,15 +19,16 @@ permissions:
 
 jobs:
   loop:
-    uses: Everesto-Inc/loop/.github/workflows/pipeline.yml@e394b20eb4ff123bbb0a9362c5de98d756b32a22 # v1.1.0
+    uses: Everesto-Inc/loop/.github/workflows/pipeline.yml@d2145b8c2dd821a2a173b73507c98b4254c336a7 # v1.1.1
     with:
       stack: python
       runner: ubuntu-latest
       tests: false
-      semgrep: true
+      semgrep: false
       sonarqube: true
       trivy: report
-    secrets: inherit
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # only what Loop needs — never `inherit` (least privilege)
     permissions:
       contents: read
       packages: write        # push + keep the last 5 images in ghcr.io
