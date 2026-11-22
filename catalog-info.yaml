@@ -14,6 +14,7 @@ metadata:
     sonarqube.org/project-key: maas-backend
     everesto.live/dependabot: "on"
     everesto.live/tests: off
+    everesto.live/semgrep: on
 spec:
   type: service
   lifecycle: experimental

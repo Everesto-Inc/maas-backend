@@ -24,7 +24,7 @@ jobs:
       stack: python
       runner: ubuntu-24.04-arm        # public repo → free native ARM runner (no QEMU emulation)
       tests: false
-      semgrep: false
+      semgrep: true
       sonarqube: true
       trivy: report
       sonar-args: -Dsonar.qualitygate.wait=false   # SonarQube reports but does not block — until MaaS has tests (coverage gate)
