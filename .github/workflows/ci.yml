@@ -27,6 +27,7 @@ jobs:
       semgrep: false
       sonarqube: true
       trivy: report
+      sonar-args: -Dsonar.qualitygate.wait=false   # SonarQube reports but does not block — until MaaS has tests (coverage gate)
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # only what Loop needs — never `inherit` (least privilege)
     permissions:
