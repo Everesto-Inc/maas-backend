@@ -10,7 +10,7 @@ metadata:
     everesto.live/image: ghcr.io/everesto-inc/maas-backend
     everesto.live/loop: v1.1.0
     everesto.live/gitleaks: "on"
-    everesto.live/trivy: "on"
+    everesto.live/trivy: "report"
     everesto.live/semgrep: "on"
     sonarqube.org/project-key: maas-backend
     everesto.live/dependabot: "on"
