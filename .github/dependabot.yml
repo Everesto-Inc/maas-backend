@@ -8,6 +8,9 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     cooldown: { default-days: 7 }
   - package-ecosystem: github-actions
     directory: /
