@@ -9,4 +9,8 @@ COPY --from=prom/prometheus:v3.4.1     /bin/prometheus    /bin/prometheus
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Non-root user — node_exporter reads /proc, Prometheus (agent mode) writes only to /tmp
+RUN useradd --create-home --uid 10001 --user-group agent
+USER agent
+
 ENTRYPOINT ["/entrypoint.sh"]
