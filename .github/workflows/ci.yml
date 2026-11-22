@@ -1,0 +1,33 @@
+# CI for maas-backend — managed by Backstage (Edit pipeline flips the switches below), built on Loop.
+# Every run ends with a scanned linux/arm64 image: ghcr.io/everesto-inc/maas-backend (pushed from main only).
+# Gitleaks, Trivy scans and the image build always run. Add own jobs below with `needs: loop`.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', 'mkdocs.yml', 'catalog-info.yaml', '*.md']   # docs/settings only → no rebuild
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  loop:
+    uses: Everesto-Inc/loop/.github/workflows/pipeline.yml@e394b20eb4ff123bbb0a9362c5de98d756b32a22 # v1.1.0
+    with:
+      stack: python
+      runner: ubuntu-latest
+      tests: true
+      semgrep: true
+      sonarqube: true
+      trivy: enforce
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write        # push + keep the last 5 images in ghcr.io
