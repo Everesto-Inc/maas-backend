@@ -13,7 +13,6 @@ metadata:
     everesto.live/trivy: "report"
     sonarqube.org/project-key: maas-backend
     everesto.live/dependabot: "on"
-    everesto.live/tests: off
     everesto.live/semgrep: on
 spec:
   type: service

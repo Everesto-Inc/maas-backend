@@ -23,7 +23,7 @@ jobs:
     with:
       stack: python
       runner: ubuntu-24.04-arm        # public repo → free native ARM runner (no QEMU emulation)
-      tests: false
+      tests: true
       semgrep: true
       sonarqube: true
       trivy: report
