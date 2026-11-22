@@ -10,7 +10,7 @@ python-dotenv==1.0.1
 cryptography==43.0.3
 pydantic[email]==2.9.2
 pydantic-settings==2.5.2
-python-multipart==0.0.12
+python-multipart==0.0.33
 aiosmtplib==3.0.1
 apscheduler==3.10.4
 websockets==13.1
