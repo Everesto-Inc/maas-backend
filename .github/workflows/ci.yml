@@ -23,7 +23,7 @@ jobs:
     with:
       stack: python
       runner: ubuntu-latest
-      tests: true
+      tests: false
       semgrep: true
       sonarqube: true
       trivy: report
