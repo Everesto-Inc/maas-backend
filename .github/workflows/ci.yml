@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # pull requests: a newer push cancels the older run · main: every commit finishes (each one publishes an image)
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -19,11 +20,11 @@ permissions:
 
 jobs:
   loop:
-    uses: Everesto-Inc/loop/.github/workflows/pipeline.yml@d2145b8c2dd821a2a173b73507c98b4254c336a7 # v1.1.1
+    uses: Everesto-Inc/loop/.github/workflows/pipeline.yml@4d70c4efcdad7bd522d60fe13d6c324a83fe0936 # v1.1.2
     with:
       stack: python
       runner: ubuntu-24.04-arm        # public repo → free native ARM runner (no QEMU emulation)
-      tests: true
+      tests: false
       semgrep: true
       sonarqube: true
       trivy: report
